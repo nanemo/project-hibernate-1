@@ -1,3 +1,20 @@
+CREATE DATABASE rpg;
+
+DROP TABLE rpg.player;
+
+CREATE TABLE rpg.player
+(
+    id         INTEGER AUTO_INCREMENT,
+    name       VARCHAR(25) NOT NULL DEFAULT '',
+    title      VARCHAR(50) NOT NULL DEFAULT '',
+    race       VARCHAR(20),
+    profession VARCHAR(20),
+    birthday   DATETIME,
+    banned     CHAR,
+    level      INTEGER,
+    PRIMARY KEY (id)
+);
+
 INSERT INTO rpg.player (id, name, title, race, profession, birthday, level, banned)
 VALUES (1, 'Ниус', 'Приходящий Без Шума', 6, 1, '2009-06-09 00:44:40.000000', 33, '\0'),
        (2, 'Никрашш', 'НайтВульф', 4, 0, '2006-07-09 08:50:40.000000', 58, '\0'),
