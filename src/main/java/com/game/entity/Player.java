@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity
+@NamedQueries(@NamedQuery(name = "GET_ALL_COUNT", query = "select count(a) from Player a"))
 @Table(name = "player", schema = "rpg")
 public class Player {
     @Id
@@ -101,5 +102,19 @@ public class Player {
 
     public void setLevel(Integer level) {
         this.level = level;
+    }
+
+    @Override
+    public String toString() {
+        return "Player{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", title='" + title + '\'' +
+                ", race=" + race +
+                ", profession=" + profession +
+                ", birthday=" + birthday +
+                ", banned=" + banned +
+                ", level=" + level +
+                '}';
     }
 }

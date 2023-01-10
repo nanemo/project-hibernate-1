@@ -4,8 +4,6 @@ import com.game.entity.Player;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.annotations.NamedQueries;
-import org.hibernate.annotations.NamedQuery;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.query.NativeQuery;
@@ -17,20 +15,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
-/* Tomcat 8080 port is busy check it.
-*  I have to do point number 11
-* */
-
-@NamedQueries({@NamedQuery(name = "GET_ALL_COUNT", query = "select count(*) from Player")})
-
 @Repository(value = "db")
 public class PlayerRepositoryDB implements IPlayerRepository {
     private final SessionFactory sessionFactory;
 
     private PlayerRepositoryDB() {
         Properties properties = new Properties();
-        properties.put(Environment.DRIVER, "com.mysql.cj.jdbc.Driver");
-        properties.put(Environment.URL, "jdbc:mysql://localhost:3306/rpg");
+        properties.put(Environment.DRIVER, "com.p6spy.engine.spy.P6SpyDriver");
+        properties.put(Environment.URL, "jdbc:p6spy:mysql://localhost:3306/rpg");
         properties.put(Environment.DIALECT, "org.hibernate.dialect.MySQL8Dialect");
         properties.put(Environment.USER, "root");
         properties.put(Environment.PASS, "12345");
@@ -38,15 +30,18 @@ public class PlayerRepositoryDB implements IPlayerRepository {
         properties.put(Environment.HBM2DDL_AUTO, "update");
 
 
-        sessionFactory = new Configuration().setProperties(properties).addAnnotatedClass(Player.class).buildSessionFactory();
+        sessionFactory = new Configuration()
+                .addAnnotatedClass(Player.class)
+                .addProperties(properties)
+                .buildSessionFactory();
 
     }
 
     @Override
     public List<Player> getAll(int pageNumber, int pageSize) {
         try (Session session = sessionFactory.openSession()) {
-            NativeQuery<Player> nativeQuery = session.createNativeQuery("SELECT * FROM rpg.player", Player.class);
-            nativeQuery.setFirstResult(pageNumber);
+            NativeQuery<Player> nativeQuery = session.createNativeQuery("select * from rpg.player", Player.class);
+            nativeQuery.setFirstResult(pageNumber * pageSize);
             nativeQuery.setMaxResults(pageSize);
             return nativeQuery.list();
         }
@@ -55,8 +50,8 @@ public class PlayerRepositoryDB implements IPlayerRepository {
     @Override
     public int getAllCount() {
         try (Session session = sessionFactory.openSession()) {
-            Query<Integer> count = session.createNamedQuery("GET_ALL_COUNT");
-            return count.getFirstResult();
+            Query<Long> allCount = session.createNamedQuery("GET_ALL_COUNT", Long.class);
+            return allCount.getSingleResult().intValue();
         }
     }
 
@@ -64,10 +59,9 @@ public class PlayerRepositoryDB implements IPlayerRepository {
     public Player save(Player player) {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            Long createdId = (Long) session.save(player);
+            session.save(player);
             session.flush();
             transaction.commit();
-            player.setId(createdId);
             return player;
         }
     }
